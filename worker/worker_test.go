@@ -8,14 +8,23 @@ import (
 	"testing"
 	"time"
 
+	"worker/codec"
 	"worker/connection"
 	"worker/event"
 )
 
 func TestWork(t *testing.T) {
 	addr := "127.0.0.1:8080"
+	icodec := codec.NewDESECB("1234567890123456")
 	ctx, cancel := context.WithCancel(context.Background())
-	work := NewWorker(WithContext(ctx))
+	work := NewWorker(
+		WithContext(ctx),
+		WithCodec(icodec),
+		WithHandle(func(c *connection.Connection, e event.Event) {
+			fmt.Println("on handle", "topic", e.Topic, "value", e.Data)
+		}),
+	)
+
 	timer := time.NewTimer(time.Second * 20)
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -27,6 +36,7 @@ func TestWork(t *testing.T) {
 			fmt.Println("Error listening:", err)
 			return
 		}
+
 		defer listener.Close()
 		wg.Done()
 		fmt.Println("TCP Server is listening on", listener.Addr())
@@ -47,7 +57,7 @@ func TestWork(t *testing.T) {
 				// 启动一个 goroutine 处理连接
 				c := work.Connection(conn)
 				c.On("msg", func(c *connection.Connection, e event.Event) {
-					fmt.Println("on msg", e.Data)
+					fmt.Println("on msg", e.Data, "conn", c.ID)
 					c.Send("rev", e.Data)
 				})
 			}
@@ -65,9 +75,13 @@ func TestWork(t *testing.T) {
 		}
 
 		defer conn.Close()
-		c := connection.NewConnection(connection.WithContext(ctx), connection.WithConn(conn))
+		c := connection.NewConnection(connection.WithContext(ctx), connection.WithConn(conn), connection.WithCodec(icodec))
 		c.On("rev", func(c *connection.Connection, e event.Event) {
 			fmt.Println("on rev", e.Data)
+			fmt.Println("count", work.Count())
+			// fmt.Println("work", work)
+			// fmt.Println("connID", c.ID)
+			fmt.Println("conn", work.Find(c.ID))
 			fmt.Println()
 		})
 		for {

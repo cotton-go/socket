@@ -5,6 +5,8 @@ import (
 
 	"worker/cache"
 	"worker/codec"
+	"worker/connection"
+	"worker/event"
 	"worker/snowflake"
 )
 
@@ -38,6 +40,22 @@ func WithCodec(value codec.ICodec) Options {
 		w.codec = value
 	}
 }
+
+func WithHandle(value connection.EventHandle) Options {
+	return func(w *Worker) {
+		if value == nil {
+			value = func(c *connection.Connection, e event.Event) {}
+		}
+
+		w.handle = value
+	}
+}
+
+// func WithEvent() Options {
+// 	return func(w *Worker) {
+// 		w.events = make(map[string]connection.EventHandle)
+// 	}
+// }
 
 func WithContext(value context.Context) Options {
 	return func(w *Worker) {

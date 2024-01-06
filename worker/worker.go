@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 
@@ -13,7 +14,7 @@ import (
 type Worker struct {
 	id          int64
 	count       int64
-	lock        sync.Mutex
+	lock        sync.RWMutex
 	ctx         context.Context
 	cancel      context.CancelFunc
 	connections map[int64]*connection.Connection
@@ -21,6 +22,7 @@ type Worker struct {
 	dbuffer     chan *connection.Connection
 	cache       cache.ICache
 	codec       codec.ICodec
+	handle      connection.EventHandle
 }
 
 func NewWorker(opts ...Options) *Worker {
@@ -90,9 +92,12 @@ func (w *Worker) onDisconnect() {
 
 func (w *Worker) Connection(conn net.Conn) *connection.Connection {
 	c := connection.NewConnection(
+		connection.WithID(0),
 		connection.WithConn(conn),
+		connection.WithWorkID(w.id),
 		connection.WithCodec(w.codec),
 		connection.WithContext(w.ctx),
+		connection.WithHandle(w.handle),
 	)
 
 	w.cbuffer <- c
@@ -109,4 +114,20 @@ func (w *Worker) ID() int64 {
 
 func (w *Worker) Count() int64 {
 	return w.count
+}
+
+func (w *Worker) Find(id int64) *connection.Connection {
+	w.lock.RLock()
+	defer w.lock.RUnlock()
+
+	if conn, ok := w.connections[id]; ok {
+		return conn
+	}
+
+	// for k, v := range w.connections {
+	// 	fmt.Println("key", k, "value", v)
+	// }
+
+	fmt.Println("connection not found", id)
+	return nil
 }

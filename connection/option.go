@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"worker/codec"
+	"worker/event"
 	"worker/snowflake"
 )
 
@@ -19,6 +20,16 @@ func WithID(value int64) Options {
 		}
 
 		w.ID = value
+	}
+}
+
+func WithWorkID(value int64) Options {
+	return func(w *Connection) {
+		if value < 1 {
+			value = snowflake.Next()
+		}
+
+		w.WorkID = value
 	}
 }
 
@@ -37,6 +48,16 @@ func WithCodec(value codec.ICodec) Options {
 		}
 
 		w.codec = value
+	}
+}
+
+func WithHandle(value EventHandle) Options {
+	return func(w *Connection) {
+		if value == nil {
+			value = func(c *Connection, e event.Event) {}
+		}
+
+		w.handle = value
 	}
 }
 

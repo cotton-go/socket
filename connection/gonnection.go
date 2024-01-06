@@ -3,13 +3,16 @@ package connection
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
 	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net"
 
 	"worker/codec"
+	"worker/constant"
 	"worker/event"
 )
 
@@ -17,6 +20,7 @@ type EventHandle func(*Connection, event.Event)
 
 type Connection struct {
 	ID       int64
+	WorkID   int64
 	conn     net.Conn
 	ctx      context.Context
 	cancel   context.CancelFunc
@@ -27,22 +31,27 @@ type Connection struct {
 	dec      *gob.Decoder
 	codec    codec.ICodec
 	closed   bool
+	handle   EventHandle
 }
 
 func NewConnection(opts ...Options) *Connection {
-	c := &Connection{
+	conn := &Connection{
 		writeBuf: make(chan event.Event, 100),
 		events:   make(map[string]EventHandle),
 	}
 
-	go c.init(opts...)
-	return c
+	conn.makeOption(opts...)
+	go conn.init(opts...)
+	b, _ := json.Marshal(conn)
+	conn.Send(constant.TopicByInitID, b)
+	return conn
 }
 
 func (w *Connection) makeOption(opts ...Options) {
 	var option = []Options{
 		WithID(0),
 		WithCodec(nil),
+		WithHandle(nil),
 		WithContext(context.Background()),
 	}
 
@@ -53,9 +62,20 @@ func (w *Connection) makeOption(opts ...Options) {
 }
 
 func (c *Connection) init(opts ...Options) {
-	c.makeOption(opts...)
-	c.On("__close__", func(c *Connection, _ event.Event) {
+	c.On(constant.TopicByClose, func(c *Connection, _ event.Event) {
 		c.close()
+	})
+
+	c.On(constant.TopicByInitID, func(c *Connection, e event.Event) {
+		b, err := base64.StdEncoding.DecodeString(e.Data.(string))
+		if err != nil {
+			fmt.Println("on connection init error[1001]", err)
+			return
+		}
+
+		if err := json.Unmarshal(b, c); err != nil {
+			fmt.Println("on connection init error[1002]", err)
+		}
 	})
 
 	go c.write()
@@ -77,6 +97,12 @@ func (c *Connection) Emit(event string, data event.Event) {
 			defer c.recover("emit")
 			fn(c, data)
 		}()
+	}
+
+	switch data.Topic {
+	case constant.TopicByInitID:
+	default:
+		c.handle(c, data)
 	}
 }
 
