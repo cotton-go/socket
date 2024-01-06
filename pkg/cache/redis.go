@@ -8,7 +8,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"worker/connection"
+	"worker/pkg/connection"
 )
 
 type Redis struct {

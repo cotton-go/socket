@@ -3,7 +3,7 @@ package cache
 import (
 	"sync"
 
-	"worker/connection"
+	"worker/pkg/connection"
 )
 
 type Memory struct {

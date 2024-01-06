@@ -3,11 +3,11 @@ package worker
 import (
 	"context"
 
-	"worker/cache"
-	"worker/codec"
-	"worker/connection"
-	"worker/event"
-	"worker/snowflake"
+	"worker/pkg/cache"
+	"worker/pkg/codec"
+	"worker/pkg/connection"
+	"worker/pkg/event"
+	"worker/pkg/snowflake"
 )
 
 type Options func(w *Worker)

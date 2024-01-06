@@ -11,9 +11,9 @@ import (
 	"io"
 	"net"
 
-	"worker/codec"
 	"worker/constant"
-	"worker/event"
+	"worker/pkg/codec"
+	"worker/pkg/event"
 )
 
 type EventHandle func(*Connection, event.Event)

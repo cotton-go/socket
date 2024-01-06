@@ -1,6 +1,6 @@
 package cache
 
-import "worker/connection"
+import "worker/pkg/connection"
 
 type ICache interface {
 	Online(conn *connection.Connection) error
