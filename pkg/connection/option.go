@@ -6,9 +6,9 @@ import (
 	"encoding/gob"
 	"net"
 
-	"worker/codec"
-	"worker/event"
-	"worker/snowflake"
+	"worker/pkg/codec"
+	"worker/pkg/event"
+	"worker/pkg/snowflake"
 )
 
 type Options func(*Connection)

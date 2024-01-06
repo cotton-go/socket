@@ -10,10 +10,10 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"worker/cache"
-	"worker/codec"
-	"worker/connection"
-	"worker/event"
+	"worker/pkg/cache"
+	"worker/pkg/codec"
+	"worker/pkg/connection"
+	"worker/pkg/event"
 )
 
 func TestWork(t *testing.T) {

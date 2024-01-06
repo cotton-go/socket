@@ -6,9 +6,9 @@ import (
 	"net"
 	"sync"
 
-	"worker/cache"
-	"worker/codec"
-	"worker/connection"
+	"worker/pkg/cache"
+	"worker/pkg/codec"
+	"worker/pkg/connection"
 )
 
 type Worker struct {
