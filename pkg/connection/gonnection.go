@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 
 	"worker/constant"
 	"worker/pkg/codec"
@@ -21,7 +22,9 @@ type EventHandle func(*Connection, event.Event)
 type Connection struct {
 	ID       int64
 	WorkID   int64
+	closed   bool
 	conn     net.Conn
+	locker   sync.Mutex
 	ctx      context.Context
 	cancel   context.CancelFunc
 	events   map[string]EventHandle
@@ -30,7 +33,6 @@ type Connection struct {
 	enc      *gob.Encoder
 	dec      *gob.Decoder
 	codec    codec.ICodec
-	closed   bool
 	handle   EventHandle
 }
 
@@ -62,9 +64,9 @@ func (w *Connection) makeOption(opts ...Options) {
 }
 
 func (c *Connection) init(opts ...Options) {
-	c.On(constant.TopicByClose, func(c *Connection, _ event.Event) {
-		c.close()
-	})
+	// c.On(constant.TopicByClose, func(c *Connection, _ event.Event) {
+	// 	c.Close()
+	// })
 
 	c.On(constant.TopicByInitID, func(c *Connection, e event.Event) {
 		b, err := base64.StdEncoding.DecodeString(e.Data.(string))
@@ -102,12 +104,18 @@ func (c *Connection) Emit(event string, data event.Event) {
 	switch data.Topic {
 	case constant.TopicByInitID:
 	default:
-		c.handle(c, data)
+		if c.handle != nil && !c.closed {
+			c.handle(c, data)
+		}
 	}
 }
 
 func (c *Connection) read() {
-	defer c.recover("read over")
+	// defer c.recover("read over")
+	defer func() {
+		recover()
+	}()
+
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -120,7 +128,7 @@ func (c *Connection) read() {
 			var event event.Event
 			if err := c.dec.Decode(&event); err != nil {
 				if err != io.EOF {
-					c.close()
+					// c.Close()
 					return
 				}
 				fmt.Println("read faild", err)
@@ -141,13 +149,14 @@ func (c *Connection) write() {
 			return
 		case buf := <-c.writeBuf:
 			if c.closed {
+				fmt.Println("is closed not can send")
 				return
 			}
 
 			buf.Data, _ = c.codec.Encode(buf.Data)
 			if err := c.enc.Encode(buf); err != nil {
 				if err != io.EOF {
-					c.close()
+					// c.Close()
 					return
 				}
 
@@ -159,17 +168,29 @@ func (c *Connection) write() {
 	}
 }
 
-func (c *Connection) Send(topic string, data any) {
+func (c *Connection) Send(topic string, data any) error {
+	if c.closed {
+		return errors.New("is closed")
+	}
+
 	c.writeBuf <- event.Event{
 		Topic: topic,
 		Data:  data,
 	}
+	return nil
 }
 
-func (c *Connection) close() {
+func (c *Connection) Close() {
+	if c.closed {
+		return
+	}
+
+	c.handle(c, event.Event{Topic: constant.TopicByClose, Data: nil})
+	// c.locker.Lock()
+	// defer c.locker.Unlock()
+	c.closed = true
 	c.cancel()
 	c.conn.Close()
-	c.closed = true
 }
 
 func (c *Connection) recover(event string) {
