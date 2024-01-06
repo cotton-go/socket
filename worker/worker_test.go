@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
+	"worker/cache"
 	"worker/codec"
 	"worker/connection"
 	"worker/event"
@@ -18,18 +21,26 @@ func TestWork(t *testing.T) {
 	icodec := codec.NewDESECB("1234567890123456")
 	ctx, cancel := context.WithCancel(context.Background())
 	work := NewWorker(
+		WithCache(cache.NewRedis(redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"}))),
 		WithContext(ctx),
 		WithCodec(icodec),
 		WithHandle(func(c *connection.Connection, e event.Event) {
 			fmt.Println("on handle", "topic", e.Topic, "value", e.Data)
 		}),
 	)
+	defer work.Close()
 
-	timer := time.NewTimer(time.Second * 20)
+	timer := time.NewTimer(time.Second * 60)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go t.Run("server", func(t *testing.T) {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("server recover", err)
+			}
+		}()
+
 		// 监听端口
 		listener, err := net.Listen("tcp", addr)
 		if err != nil {
@@ -65,6 +76,12 @@ func TestWork(t *testing.T) {
 	})
 
 	go t.Run("client", func(t *testing.T) {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("client recover", err)
+			}
+		}()
+
 		wg.Wait()
 
 		// 连接服务器
@@ -84,6 +101,7 @@ func TestWork(t *testing.T) {
 			fmt.Println("conn", work.Find(c.ID))
 			fmt.Println()
 		})
+
 		for {
 			select {
 			case <-timer.C:

@@ -24,7 +24,7 @@ func WithID(value int64) Options {
 func WithCache(value cache.ICache) Options {
 	return func(w *Worker) {
 		if value == nil {
-			value = &cache.Memory{}
+			value = cache.NewMemory()
 		}
 
 		w.cache = value

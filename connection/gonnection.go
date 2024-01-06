@@ -134,7 +134,7 @@ func (c *Connection) read() {
 }
 
 func (c *Connection) write() {
-	defer c.recover("read")
+	defer c.recover("write over")
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -173,7 +173,7 @@ func (c *Connection) close() {
 }
 
 func (c *Connection) recover(event string) {
-	if r := recover(); r != nil {
-		fmt.Println("r", r)
+	if err := recover(); err != nil {
+		fmt.Println("connection recover", "event", event, "err", err)
 	}
 }

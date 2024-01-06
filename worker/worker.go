@@ -66,7 +66,9 @@ func (w *Worker) onConnection() {
 			id := conn.ID
 			w.count += 1
 			w.connections[id] = conn
-			w.cache.Online(conn)
+			if err := w.cache.Online(conn); err != nil {
+				fmt.Println("cache online error", err)
+			}
 			w.lock.Unlock()
 		}
 	}
@@ -76,6 +78,9 @@ func (w *Worker) onDisconnect() {
 	for {
 		select {
 		case <-w.ctx.Done():
+			for _, conn := range w.connections {
+				w.cache.Offline(conn)
+			}
 			return
 		case conn := <-w.dbuffer:
 			id := conn.ID
@@ -83,7 +88,10 @@ func (w *Worker) onDisconnect() {
 				w.lock.Lock()
 				w.count -= 1
 				delete(w.connections, id)
-				w.cache.Offline(conn)
+				if err := w.cache.Offline(conn); err != nil {
+					fmt.Println("cache offline error", err)
+				}
+
 				w.lock.Unlock()
 			}
 		}
@@ -124,10 +132,17 @@ func (w *Worker) Find(id int64) *connection.Connection {
 		return conn
 	}
 
-	// for k, v := range w.connections {
-	// 	fmt.Println("key", k, "value", v)
-	// }
+	if conn := w.cache.Find(id); conn != nil {
+		return conn
+	}
 
 	fmt.Println("connection not found", id)
 	return nil
+}
+
+func (w *Worker) Close() {
+	w.cancel()
+	// for _, v := range w.connections {
+
+	// }
 }

@@ -5,5 +5,5 @@ import "worker/connection"
 type ICache interface {
 	Online(conn *connection.Connection) error
 	Offline(conn *connection.Connection) error
-	// Find(id ...int64)
+	Find(id int64) *connection.Connection
 }
