@@ -3,10 +3,10 @@ package tcp
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
-	"worker/constant"
 	"worker/pkg/client"
 	"worker/pkg/codec"
 	"worker/pkg/connection"
@@ -19,6 +19,7 @@ func TestNewTCP(t *testing.T) {
 	auth := false
 	prot := 8080
 	host := "127.0.0.1"
+
 	icodec := codec.NewDESECB("1234567890123456")
 	ctx, cancel := context.WithCancel(context.Background())
 	work := worker.NewWorker(
@@ -26,12 +27,14 @@ func TestNewTCP(t *testing.T) {
 		worker.WithCodec(icodec),
 		worker.WithHandle(func(c *connection.Connection, e event.Event) {
 			fmt.Println("on handle", "topic", e.Topic, "value", e.Data)
-			if e.Topic == constant.TopicByClose {
+			if e.Topic == event.TopicByClose {
 				fmt.Println("收到断开连接请求", c.ID)
+				time.Sleep(time.Second * 5)
+				cancel()
 				return
 			}
 
-			if e.Topic == constant.TopicByLogin {
+			if e.Topic == event.TopicByLogin {
 				auth = true
 				fmt.Println("收到登陆认证请求", c.ID)
 				c.Send("logind", e.Data)
@@ -54,12 +57,35 @@ func TestNewTCP(t *testing.T) {
 	)
 
 	defer work.Close()
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-	server := NewServer(log.NewLog(log.Config{}), WithServerWorker(work), WithServerHost(host), WithServerPort(prot))
-	go server.Start(ctx)
+	server := NewServer(
+		log.NewLog(log.Config{}),
+		WithServerWorker(work),
+		WithServerHost(host),
+		WithServerPort(prot),
+		WithServerStartAfter(func(ctx context.Context) {
+			wg.Done()
+		}))
+
+	go func() {
+		go server.Start(ctx)
+
+		for {
+			select {
+			case <-ctx.Done():
+				server.Stop(ctx)
+				return
+			default:
+				fmt.Println("count", work.Count(), "connections", work.Connections())
+				time.Sleep(time.Second)
+			}
+		}
+	}()
 
 	t.Run("client", func(t *testing.T) {
-		time.Sleep(time.Second * 10)
+		wg.Wait()
 
 		handle := connection.WithHandle(func(c *connection.Connection, e event.Event) {
 			fmt.Println("on handle 1", "topic", e.Topic, "value", e.Data)

@@ -2,8 +2,8 @@ package codec
 
 import (
 	"encoding/base64"
-	"encoding/json"
 
+	"github.com/bytedance/sonic"
 	"github.com/forgoer/openssl"
 	"github.com/pkg/errors"
 )
@@ -40,7 +40,7 @@ func (sc DESECB) decrypt(src string) ([]byte, error) {
 }
 
 func (sc DESECB) Encode(value any) (any, error) {
-	b, _ := json.Marshal(Event{Value: value})
+	b, _ := sonic.Marshal(Event{Value: value})
 	return sc.encrypt(b)
 }
 
@@ -51,7 +51,7 @@ func (sc DESECB) Decode(value any) (any, error) {
 	}
 
 	var event Event
-	if err := json.Unmarshal(data, &event); err != nil {
+	if err := sonic.Unmarshal(data, &event); err != nil {
 		return nil, errors.Wrap(err, "解析失败[1002]")
 	}
 

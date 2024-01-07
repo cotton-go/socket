@@ -3,8 +3,8 @@ package codec
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 
+	"github.com/bytedance/sonic"
 	"github.com/forgoer/openssl"
 	"github.com/pkg/errors"
 )
@@ -53,7 +53,7 @@ func (sc AESECB) decrypt(src string) ([]byte, error) {
 }
 
 func (sc AESECB) Encode(value any) (any, error) {
-	b, _ := json.Marshal(Event{Value: value})
+	b, _ := sonic.Marshal(Event{Value: value})
 	return sc.encrypt(b)
 }
 
@@ -64,7 +64,7 @@ func (sc AESECB) Decode(value any) (any, error) {
 	}
 
 	var event Event
-	if err := json.Unmarshal(data, &event); err != nil {
+	if err := sonic.Unmarshal(data, &event); err != nil {
 		return nil, errors.Wrap(err, "解析失败[1002]")
 	}
 

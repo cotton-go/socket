@@ -11,6 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"worker/pkg/cache"
+	"worker/pkg/client"
 	"worker/pkg/codec"
 	"worker/pkg/connection"
 	"worker/pkg/event"
@@ -85,15 +86,12 @@ func TestWork(t *testing.T) {
 		wg.Wait()
 
 		// 连接服务器
-		conn, err := net.Dial("tcp", addr)
+		c, err := client.New(addr, connection.WithContext(ctx), connection.WithCodec(icodec))
 		if err != nil {
-			fmt.Println("Error connecting to server:", err)
 			return
 		}
 
-		defer conn.Close()
-		c := connection.NewConnection(connection.WithContext(ctx), connection.WithConn(conn), connection.WithCodec(icodec))
-		c.On("rev", func(c *connection.Connection, e event.Event) {
+		c.Subscription("rev", func(c *connection.Connection, e event.Event) {
 			fmt.Println("on rev", e.Data)
 			fmt.Println("count", work.Count())
 			// fmt.Println("work", work)
@@ -102,22 +100,27 @@ func TestWork(t *testing.T) {
 			fmt.Println()
 		})
 
-		for {
-			select {
-			case <-timer.C:
-				// c.cancel()
-				return
-			default:
-				msg := time.Now().String()
-				c.Send("msg", msg)
-				fmt.Println("send", msg)
-				time.Sleep(time.Second * 5)
-			}
-		}
+		// for {
+		// 	select {
+		// 	case <-timer.C:
+		// 		// c.cancel()
+		// 		return
+		// 	default:
+		msg := time.Now().String()
+		c.Send("msg", msg)
+		fmt.Println("send", msg)
+		time.Sleep(time.Second * 5)
+		// 	}
+		// }
 	})
 
-	select {
-	case <-timer.C:
-		return
+	for {
+		select {
+		case <-timer.C:
+			return
+		default:
+			fmt.Println("当前在线人数", work.Count())
+			time.Sleep(time.Second)
+		}
 	}
 }

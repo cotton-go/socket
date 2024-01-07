@@ -1,7 +1,7 @@
-package constant
+package event
 
 const (
 	TopicByInitID = "__init_id__"
-	TopicByLogin  = "login"
 	TopicByClose  = "__close__"
+	TopicByLogin  = "__login__"
 )
