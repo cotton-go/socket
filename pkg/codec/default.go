@@ -3,6 +3,10 @@ package codec
 // Default 结构体，用于存储默认值
 type Default struct{}
 
+func NewDefault() *Default {
+	return &Default{}
+}
+
 // Encode函数，用于对任意类型的值进行编码。
 //
 // 参数：

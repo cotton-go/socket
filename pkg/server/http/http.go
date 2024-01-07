@@ -24,12 +24,12 @@ type Option func(s *Server)
 
 // NewServer 创建一个新的服务器实例
 // 参数：
-// - handler http.Handler 用于处理HTTP请求的处理器
 // - logger *log.Logger 用于记录日志的日志记录器
+// - handler http.Handler 用于处理HTTP请求的处理器
 // - opts ...Option 可选的配置选项
 // 返回值：
 // - *Server 返回新创建的服务器实例
-func NewServer(handler http.Handler, logger *log.Logger, opts ...Option) *Server {
+func NewServer(logger *log.Logger, handler http.Handler, opts ...Option) *Server {
 	s := &Server{
 		handler: handler,
 		logger:  logger,
