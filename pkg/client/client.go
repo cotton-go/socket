@@ -14,6 +14,14 @@ type Client struct {
 }
 
 // New 方法用于创建一个新的客户端实例。
+//
+// 参数
+//   - addr 表示服务器地址
+//   - ...connection.Options 表示连接选项
+//
+// 返回值
+//   - client 客户端实例
+//   - error 错误信息
 func New(addr string, opts ...connection.Options) (*Client, error) {
 	// 连接服务器
 	conn, err := net.Dial("tcp", addr)
@@ -47,13 +55,26 @@ func New(addr string, opts ...connection.Options) (*Client, error) {
 	return &client, nil
 }
 
-// Send 方法用于向指定主题发送消息。
+// Send方法用于发送消息
+//
+// 参数：
+// - topic 主题
+// - data 数据
+//
+// 返回值
+// - error
 func (c Client) Send(topic string, data any) error {
-	// 调用连接对象的 Send 方法发送消息
+	// 调用连接对象的Send方法发送消息
 	return c.conn.Send(topic, data)
 }
 
-// Subscription 方法用于订阅指定主题的消息，并在收到消息时调用 handdle 函数进行处理。
+// Subscription方法用于订阅主题
+//
+// 参数:
+// - topic 主题
+// - handdle 事件处理器
+//
+// 返回值: 无
 func (c Client) Subscription(topic string, handdle connection.EventHandle) {
 	c.conn.On(topic, handdle)
 }

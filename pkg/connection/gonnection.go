@@ -37,6 +37,12 @@ type Connection struct {
 }
 
 // NewConnection 创建一个新的连接对象，并返回该对象的指针
+//
+// 参数：
+//   - opts ...Options 可变参数，表示连接选项
+//
+// 返回值：
+//   - *Connection 返回一个指向 Connection 类型的指针
 func NewConnection(opts ...Options) *Connection {
 	// 初始化连接对象
 	conn := &Connection{
@@ -70,7 +76,11 @@ func (w *Connection) makeOption(opts ...Options) {
 	}
 }
 
-// init 初始化连接对象，并根据参数设置连接选项。
+// init 初始化连接
+//
+// 参数：
+//   - c *Connection 连接对象指针
+//   - opts ...Options 可变参数，表示可选的配置项
 func (c *Connection) init(opts ...Options) {
 	// 打印连接 ID
 	// fmt.Println("Connection init id=", c.ID)
@@ -109,6 +119,13 @@ func (c *Connection) init(opts ...Options) {
 }
 
 // On 注册事件处理函数
+//
+// 参数：
+//   - event string 事件名称
+//   - fn EventHandle 事件处理函数
+//
+// 返回值：
+//   - error 返回错误信息，如果成功则返回 nil
 func (c *Connection) On(event string, fn EventHandle) error {
 	// 如果连接已关闭，则返回错误
 	if c.closed {
@@ -122,7 +139,11 @@ func (c *Connection) On(event string, fn EventHandle) error {
 	return nil
 }
 
-// Emit 发送事件消息
+// Emit 发送事件
+//
+// 参数：
+//   - topic string 主题
+//   - data event.Event 事件数据
 func (c *Connection) Emit(topic string, data event.Event) {
 	// 定义一个函数 handle,用于处理事件回调函数列表中的每个函数
 	handle := func(handles ...EventHandle) {
@@ -159,17 +180,22 @@ func (c *Connection) Emit(topic string, data event.Event) {
 	}
 }
 
-// read 从连接中读取事件数据，并触发相应的事件处理函数。
+// read 函数用于从连接中读取事件数据，直到连接关闭或发生错误。
+//
+// 返回值：
+//   - error 返回错误信息
+//
+// read方法用于从连接中读取事件数据
 func (c *Connection) read() {
-	// 在函数退出前调用 recover 方法，防止 panic 导致的程序崩溃。
+	// 在函数退出前调用 recover 方法，防止 panic 导致的程序崩溃
 	defer c.recover("read over")
 
-	// 在函数退出前触发关闭事件。
+	// 在函数退出前触发关闭事件
 	defer func() {
 		c.Emit(event.TopicByClose, event.Event{Topic: event.TopicByClose})
 	}()
 
-	// 循环读取事件数据，直到连接关闭或发生错误。
+	// 循环读取事件数据，直到连接关闭或发生错误
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -177,27 +203,31 @@ func (c *Connection) read() {
 			return
 		default:
 			if c.closed {
-				// 如果连接已关闭，则返回。
+				// 如果连接已关闭，则返回
 				return
 			}
 
-			var event event.Event
-			// 从连接中解码事件数据。
-			if err := c.dec.Decode(&event); err != nil {
+			var e event.Event
+			// 从连接中解码事件数据
+			if err := c.dec.Decode(&e); err != nil {
 				fmt.Println("read faild", err)
-				// 如果解码失败，则返回。
+				// 如果解码失败，则返回
 				return
 			}
 
-			// 对事件数据进行编解码。
-			event.Data, _ = c.codec.Decode(event.Data)
-			// 触发相应的事件处理函数。
-			c.Emit(event.Topic, event)
+			// 对事件数据进行编解码
+			e.Data, _ = c.codec.Decode(e.Data)
+			// 触发相应的事件处理函数
+			c.Emit(e.Topic, e)
 		}
 	}
 }
 
-// write 方法用于向连接中写入数据。
+// write 函数用于将缓冲区中的数据写入连接。
+//
+// 参数：无
+//
+// 返回值：无
 func (c *Connection) write() {
 	// 在函数退出前调用 recover 方法，防止 panic 导致的程序崩溃。
 	defer c.recover("write over")
@@ -206,7 +236,7 @@ func (c *Connection) write() {
 		case <-c.ctx.Done():
 			// 当上下文被取消时，返回。
 			return
-		case buf := <-c.writeBuf:
+		case buffer := <-c.writeBuf:
 			// 如果连接已关闭，则无法发送数据。
 			if c.closed {
 				fmt.Println("is closed not can send")
@@ -214,45 +244,43 @@ func (c *Connection) write() {
 			}
 
 			// 对数据进行编解码。
-			buf.Data, _ = c.codec.Encode(buf.Data)
+			buffer.Data, _ = c.codec.Encode(buffer.Data)
 			// 如果编码失败，则返回错误信息。
-			if err := c.enc.Encode(buf); err != nil {
-				// if err != io.EOF {
-				//  // c.Close()
-				//  return
-				// }
-
+			if err := c.enc.Encode(buffer); err != nil {
 				fmt.Println("write faild", err)
 				return
 			}
+
 			// 将缓冲区中的数据写入连接。
 			c.encBuf.Flush()
 		}
 	}
 }
 
-// Send 方法用于向连接发送数据。
+// Send 函数用于向指定主题发送数据。
 //
 // 参数：
-// topic string - 要发送数据的话题名称。
-// data any - 要发送的数据，可以是任意类型。
+//   - topic string 主题名称
+//   - data any 任意类型的数据
 //
 // 返回值：
-// error - 如果连接已关闭，则返回错误信息；否则返回 nil。
+//   - error 返回错误信息，如果连接已关闭则返回 "is closed" 错误
 func (c *Connection) Send(topic string, data any) error {
 	if c.closed {
 		return errors.New("is closed")
 	}
 
 	// 将事件写入缓冲区并返回 nil。
-	c.writeBuf <- event.Event{
-		Topic: topic,
-		Data:  data,
-	}
+	c.writeBuf <- event.Event{Topic: topic, Data: data}
 	return nil
 }
 
-// Close 方法用于关闭连接。
+// Close 函数用于关闭连接。
+//
+// 参数：无
+//
+// 返回值：
+//   - error 返回错误信息，如果关闭成功则返回 nil。
 func (c *Connection) Close() error {
 	// 如果连接已经关闭，则直接返回 nil。
 	if c.closed {
@@ -278,7 +306,10 @@ func (c *Connection) Close() error {
 	return nil
 }
 
-// recover 方法用于在连接中恢复错误处理。
+// recover 函数用于在发生错误时进行恢复操作。
+//
+// 参数：
+//   - event string 事件名称
 func (c *Connection) recover(event string) {
 	// 如果有错误发生，则打印错误信息。
 	if err := recover(); err != nil {
