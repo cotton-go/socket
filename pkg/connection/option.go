@@ -146,3 +146,22 @@ func WithContext(value context.Context) Options {
 		c.ctx, c.cancel = context.WithCancel(value)
 	}
 }
+
+// WithClose 函数用于设置一个关闭事件处理器，当连接关闭时触发。
+//
+// 参数：
+// - value EventHandle 一个事件处理器，当连接关闭时会被调用。如果为 nil,则使用默认的处理器。
+//
+// 返回值：
+// - Options 一个闭包，接受一个 Connection 类型的参数 c,并设置其关闭事件处理器。
+func WithClose(value EventHandle) Options {
+	return func(c *Connection) {
+		if value == nil {
+			value = func(c *Connection, e event.Event) {
+				c.cancel()
+			}
+		}
+
+		c.On(event.TopicByClose, value)
+	}
+}

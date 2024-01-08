@@ -1,8 +1,6 @@
 package worker
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -10,8 +8,6 @@ import (
 
 	"worker/pkg/cache"
 	"worker/pkg/codec"
-	"worker/pkg/connection"
-	"worker/pkg/event"
 	"worker/pkg/log"
 	"worker/pkg/server"
 	"worker/pkg/server/grpc"
@@ -24,7 +20,7 @@ var (
 	work *worker.Worker
 )
 
-func InitTCPServer(conf tcp.Config, logger *log.Logger) server.Server {
+func InitTCPServer(conf tcp.Config, logger *log.Logger, opts ...worker.Options) server.Server {
 	var icodec codec.ICodec
 	switch strings.ToUpper(conf.Codec) {
 	case "AESCBC":
@@ -41,24 +37,21 @@ func InitTCPServer(conf tcp.Config, logger *log.Logger) server.Server {
 
 	var cachex = cache.NewMemory()
 	// if conf.Redis != nil {
-	// 	cachex = cache.NewRedis(redis.NewClient(&redis.Options{
-	// 		Addr:       conf.Redis.Addr,
-	// 		Username:   conf.Redis.Username,
-	// 		Password:   conf.Redis.Password,
-	// 		MaxRetries: conf.Redis.MaxRetries,
-	// 		DB:         conf.Redis.DB,
-	// 	}))
+	// cachex = cache.NewRedis(redis.NewClient(&redis.Options{
+	// 	Addr:       conf.Redis.Addr,
+	// 	Username:   conf.Redis.Username,
+	// 	Password:   conf.Redis.Password,
+	// 	MaxRetries: conf.Redis.MaxRetries,
+	// 	DB:         conf.Redis.DB,
+	// }))
 	// }
 
-	work = worker.NewWorker(
+	opts = append(opts,
 		worker.WithCache(cachex),
 		worker.WithCodec(icodec),
-		worker.WithContext(context.Background()),
-		worker.WithHandle(func(c *connection.Connection, e event.Event) {
-			fmt.Println("client", c.ID, "topic", e.Topic, "data", e.Data, "count", work.Count())
-		}),
 	)
 
+	work = worker.NewWorker(opts...)
 	socket := tcp.NewServer(
 		logger,
 		tcp.WithServerWorker(work),
