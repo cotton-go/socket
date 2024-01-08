@@ -115,6 +115,7 @@ func (w *Worker) onConnection() {
 				// 如果设置在线状态失败，则输出错误信息
 				fmt.Println("cache online error", err)
 			}
+			w.handle(conn, event.Event{Topic: event.TopicByLogin})
 			w.lock.Unlock()
 		}
 	}

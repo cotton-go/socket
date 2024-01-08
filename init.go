@@ -90,23 +90,26 @@ func InitHTTPServer(conf httpx.Config, logger *log.Logger) server.Server {
 		ctx.JSON(http.StatusOK, gin.H{"data": conn, "code": 0, "msg": "ok"})
 	})
 
-	router.GET("/v1/send", func(ctx *gin.Context) {
+	router.POST("/v1/send", func(ctx *gin.Context) {
 		var req struct {
-			ID    int64  `json:"id" form:"id"`
-			Topic string `json:"topic" form:"topic"`
-			Data  any    `json:"data" form:"data"`
+			ID    int64  `form:"id" json:"id"`
+			Topic string `form:"topic" json:"topic"`
+			Data  any    `form:"data" json:"data"`
 		}
 
 		if err := ctx.Bind(&req); err != nil {
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "msg": "获取参数错误"})
 			return
 		}
 
 		conn := work.Find(req.ID)
 		if conn == nil {
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "msg": "用户不在线"})
 			return
 		}
 
 		if err := conn.Send(req.Topic, req.Data); err != nil {
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "msg": "发送数据失败"})
 			return
 		}
 

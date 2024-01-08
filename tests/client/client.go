@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -11,6 +10,7 @@ import (
 	"worker/pkg/codec"
 	"worker/pkg/config"
 	"worker/pkg/connection"
+	"worker/pkg/event"
 )
 
 func main() {
@@ -30,15 +30,15 @@ func main() {
 	ci, err := client.New(
 		addrress,
 		connection.WithCodec(codec.NewDESECB(conf.TCP.Secret)),
+		connection.WithHandle(func(c *connection.Connection, e event.Event) {
+			fmt.Println("print msg", "topic", e.Topic, "data", e.Data)
+		}),
 	)
 
 	if err != nil {
 		panic(err)
 	}
 
-	for {
-		ci.Send("hello", "world")
-		time.Sleep(time.Second * 5)
-	}
-
+	fmt.Println("startd", "ci", ci)
+	select {}
 }
