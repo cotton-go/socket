@@ -1,0 +1,27 @@
+ENV: local
+
+Logger:
+  Env: local
+  Level: debug
+  FileName: # 日志文件名
+  MaxSize: 1024
+  MaxBackups: 10
+  MaxAge: 30
+  Compress: true
+  Encoding: json
+
+HTTP:
+  Host: 0.0.0.0
+  Port: 6454
+
+GRPC: {}
+
+TCP:
+  Codec: DESECB
+  Secret: 1234567890123456
+  Host: 0.0.0.0
+  Port: 6453
+  Redis:
+    Addr: 127.0.0.1:30001
+    Password:
+    DB: 6

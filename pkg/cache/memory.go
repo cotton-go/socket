@@ -13,7 +13,7 @@ type Memory struct {
 }
 
 // NewMemory 函数返回一个新的 Memory 实例
-func NewMemory() *Memory {
+func NewMemory() ICache {
 	return &Memory{
 		store: make(map[int64]*connection.Connection), // 初始化存储连接的 map
 	}

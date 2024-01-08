@@ -89,6 +89,8 @@ func (s *Server) Start(ctx context.Context) error {
 	defer listener.Close()
 	defer s.worker.Close()
 
+	s.logger.Info("TCP Server startd listener", zap.String("host", s.host), zap.Int("port", s.port))
+
 	// 循环处理客户端连接
 	for {
 		select {
@@ -133,6 +135,8 @@ func (s *Server) Stop(ctx context.Context) error {
 
 	// 取消服务器的所有 goroutine
 	s.cancel()
+
+	fmt.Println("count", s.worker.Count())
 
 	// 记录错误日志，表示服务器正在退出
 	s.logger.Error("Server exiting[1001]")

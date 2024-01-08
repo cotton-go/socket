@@ -18,7 +18,7 @@ type Redis struct {
 }
 
 // NewRedis 函数用于创建一个新的 Redis 实例
-func NewRedis(store *redis.Client) *Redis {
+func NewRedis(store *redis.Client) ICache {
 	return &Redis{
 		ctx:   context.Background(),
 		store: store,

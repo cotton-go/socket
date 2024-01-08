@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"go.uber.org/zap"
+
 	"worker/pkg/log"
 )
 
@@ -38,6 +40,7 @@ func NewServer(logger *log.Logger, handler http.Handler, opts ...Option) *Server
 	for _, opt := range opts {
 		opt(s)
 	}
+
 	return s
 }
 
@@ -75,6 +78,7 @@ func (s *Server) Start(ctx context.Context) error {
 		Handler: s.handler,
 	}
 
+	s.logger.Info("HTTP Server started listener", zap.String("host", s.host), zap.Int("port", s.port))
 	// 开始监听并处理请求
 	if err := s.httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		// 如果出现错误且不是服务器关闭错误，则记录错误并退出程序

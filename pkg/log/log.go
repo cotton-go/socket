@@ -20,14 +20,14 @@ type Logger struct {
 
 // Config 结构体用于存储配置信息
 type Config struct {
-	Env        string // 环境变量，如生产、开发等
-	Level      string // 日志级别，如 debug、info、warn、error 等
-	FileName   string // 日志文件名
-	MaxSize    int    // 日志文件最大大小，单位为字节
-	MaxBackups int    // 日志文件最大备份数
-	MaxAge     int    // 日志文件最大保存时间，单位为天
-	Compress   bool   // 是否启用日志文件压缩
-	Encoding   string // 日志文件编码格式，如 json、console 等
+	Env        string `yaml:"Env"`        // 环境变量，如生产、开发等
+	Level      string `yaml:"Level"`      // 日志级别，如 debug、info、warn、error 等
+	FileName   string `yaml:"FileName"`   // 日志文件名
+	MaxSize    int    `yaml:"MaxSize"`    // 日志文件最大大小，单位为字节
+	MaxBackups int    `yaml:"MaxBackups"` // 日志文件最大备份数
+	MaxAge     int    `yaml:"MaxAge"`     // 日志文件最大保存时间，单位为天
+	Compress   bool   `yaml:"Compress"`   // 是否启用日志文件压缩
+	Encoding   string `yaml:"Encoding"`   // 日志文件编码格式，如 json、console 等
 }
 
 // NewLog 创建一个新的日志记录器实例，根据配置文件中的设置进行初始化。

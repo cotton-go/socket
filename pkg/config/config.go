@@ -9,8 +9,8 @@ import (
 
 type Config struct {
 	Env    string
-	Logger log.Config
-	HTTP   http.Config
-	GRPC   grpc.Config
-	TCP    tcp.Config
+	Logger log.Config  `yaml:"Logger"`
+	HTTP   http.Config `yaml:"HTTP"`
+	GRPC   grpc.Config `yaml:"GRPC"`
+	TCP    tcp.Config  `yaml:"TCP"`
 }

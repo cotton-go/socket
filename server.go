@@ -9,8 +9,10 @@ import (
 func NewServer(conf config.Config) *app.App {
 	logger := log.NewLog(conf.Logger)
 	return app.NewApp(
-		InitTCPServer(conf.TCP, logger),
-		InitHTTPServer(conf.HTTP, logger),
-		InitGRPCServer(conf.GRPC, logger),
+		app.WithServer(
+			InitTCPServer(conf.TCP, logger),
+			InitHTTPServer(conf.HTTP, logger),
+			// InitGRPCServer(conf.GRPC, logger),
+		),
 	)
 }
