@@ -93,5 +93,6 @@ func (sc DESECB) Decode(value any) (any, error) {
 	if err := sonic.Unmarshal(data, &event); err != nil {
 		return nil, errors.Wrap(err, "解析失败[1002]")
 	}
+
 	return event.Value, nil
 }

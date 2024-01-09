@@ -106,7 +106,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	// 尝试关闭服务器
 	if err := s.httpSrv.Shutdown(ctx); err != nil {
 		// 如果在关闭服务器时发生错误，记录错误并强制关闭服务器
-		s.logger.Sugar().Fatal("Server forced to shutdown: ", err)
+		s.logger.Sugar().Fatal("Server forced to shutdown:", err)
 	}
 
 	// 记录日志，表示服务器正在退出

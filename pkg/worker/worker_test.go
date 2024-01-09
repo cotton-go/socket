@@ -19,7 +19,7 @@ import (
 
 func TestWork(t *testing.T) {
 	addr := "127.0.0.1:8080"
-	icodec := codec.NewDESECB("1234567890123456")
+	icodec := codec.New("AESECB", "1234567890123456")
 	ctx, cancel := context.WithCancel(context.Background())
 	work := NewWorker(
 		WithCache(cache.NewRedis(redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"}))),

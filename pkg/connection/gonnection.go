@@ -213,14 +213,19 @@ func (c *Connection) read() {
 
 			var e event.Event
 			// 从连接中解码事件数据
-			if err := c.dec.Decode(&e); err != nil {
+			err := c.dec.Decode(&e)
+			if err != nil {
 				fmt.Println("read faild", err)
 				// 如果解码失败，则返回
 				return
 			}
 
 			// 对事件数据进行编解码
-			e.Data, _ = c.codec.Decode(e.Data)
+			e.Data, err = c.codec.Decode(e.Data)
+			if err != nil {
+				fmt.Println("err", err)
+				return
+			}
 			// 触发相应的事件处理函数
 			c.Emit(e.Topic, e)
 		}

@@ -2,7 +2,6 @@ package socket
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -21,20 +20,6 @@ var (
 )
 
 func InitTCPServer(conf tcp.Config, logger *log.Logger, opts ...worker.Options) server.Server {
-	var icodec codec.ICodec
-	switch strings.ToUpper(conf.Codec) {
-	case "AESCBC":
-		icodec = codec.NewAESCBC(conf.Secret)
-	case "AESECB":
-		icodec = codec.NewAESECB(conf.Secret)
-	case "DESCBC":
-		icodec = codec.NewDESCBC(conf.Secret)
-	case "DESECB":
-		icodec = codec.NewDESECB(conf.Secret)
-	default:
-		icodec = codec.NewDefault()
-	}
-
 	var cachex = cache.NewMemory()
 	// if conf.Redis != nil {
 	// cachex = cache.NewRedis(redis.NewClient(&redis.Options{
@@ -48,7 +33,7 @@ func InitTCPServer(conf tcp.Config, logger *log.Logger, opts ...worker.Options) 
 
 	opts = append(opts,
 		worker.WithCache(cachex),
-		worker.WithCodec(icodec),
+		worker.WithCodec(codec.New(conf.Codec, conf.Secret)),
 	)
 
 	work = worker.NewWorker(opts...)

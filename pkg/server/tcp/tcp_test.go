@@ -20,7 +20,7 @@ func TestNewTCP(t *testing.T) {
 	prot := 8080
 	host := "127.0.0.1"
 
-	icodec := codec.NewDESECB("1234567890123456")
+	icodec := codec.New("AESECB", "1234567890123456")
 	ctx, cancel := context.WithCancel(context.Background())
 	work := worker.NewWorker(
 		worker.WithContext(ctx),
@@ -124,34 +124,6 @@ func TestNewTCP(t *testing.T) {
 				time.Sleep(time.Second * 5)
 			}
 		}
-
-		// // 连接服务器
-		// conn, err := net.Dial("tcp", addr)
-		// if err != nil {
-		// 	fmt.Println("Error connecting to server:", err)
-		// 	return
-		// }
-
-		// defer conn.Close()
-		// c := connection.NewConnection(connection.WithContext(ctx), connection.WithConn(conn), connection.WithCodec(icodec))
-		// c.On("rev", func(c *connection.Connection, e event.Event) {
-		// 	fmt.Println("on rev", e.Data)
-		// 	fmt.Println("count", work.Count())
-		// 	// fmt.Println("conn", work.Find(c.ID))
-		// 	fmt.Println()
-		// })
-
-		// for {
-		// 	select {
-		// 	case <-ctx.Done():
-		// 		return
-		// 	default:
-		// 		msg := time.Now().String()
-		// 		c.Send("msg", msg)
-		// 		fmt.Println("send", msg)
-		// 		time.Sleep(time.Second * 5)
-		// 	}
-		// }
 	})
 
 	time.Sleep(time.Minute * 1)
