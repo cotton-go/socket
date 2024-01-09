@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/bytedance/sonic"
 
@@ -20,20 +21,21 @@ type EventHandle func(*Connection, event.Event)
 
 // Connection 结构体表示一个连接
 type Connection struct {
-	ID       int64                    // 连接ID
-	WorkID   int64                    // 工作ID
-	closed   bool                     // 连接是否关闭
-	conn     net.Conn                 // 网络连接
-	ctx      context.Context          // 上下文对象
-	cancel   context.CancelFunc       // 取消函数
-	events   map[string][]EventHandle // 事件处理函数列表
-	writeBuf chan event.Event         // 写缓冲区
-	encBuf   *bufio.Writer            // 编码缓冲区
-	enc      *gob.Encoder             // 编码器
-	dec      *gob.Decoder             // 解码器
-	codec    codec.ICodec             // 编解码器接口
-	handle   EventHandle              // 事件处理函数
-	isClient bool                     // 是否为客户端连接
+	ID        int64                    // 连接ID
+	WorkID    int64                    // 工作ID
+	closed    bool                     // 连接是否关闭
+	conn      net.Conn                 // 网络连接
+	ctx       context.Context          // 上下文对象
+	cancel    context.CancelFunc       // 取消函数
+	events    map[string][]EventHandle // 事件处理函数列表
+	writeBuf  chan event.Event         // 写缓冲区
+	encBuf    *bufio.Writer            // 编码缓冲区
+	enc       *gob.Encoder             // 编码器
+	dec       *gob.Decoder             // 解码器
+	codec     codec.ICodec             // 编解码器接口
+	handle    EventHandle              // 事件处理函数
+	isClient  bool                     // 是否为客户端连接
+	heartbeat *time.Ticker             // 心跳间隔
 }
 
 // NewConnection 创建一个新的连接对象，并返回该对象的指针
@@ -46,8 +48,9 @@ type Connection struct {
 func NewConnection(opts ...Options) *Connection {
 	// 初始化连接对象
 	conn := &Connection{
-		writeBuf: make(chan event.Event, 100),
-		events:   make(map[string][]EventHandle),
+		writeBuf:  make(chan event.Event, 100),
+		events:    make(map[string][]EventHandle),
+		heartbeat: time.NewTicker(time.Second * 50),
 	}
 
 	// 调用 makeOption 方法设置连接选项
@@ -106,6 +109,7 @@ func (c *Connection) init(opts ...Options) {
 			c.ID = conn.ID
 			c.WorkID = conn.WorkID
 		})
+		go c.onHeartbeat()
 	} else {
 		// 如果是服务端，则将当前连接对象序列化为字节数组，并发送给客户端
 		b, _ := sonic.Marshal(c)
@@ -273,6 +277,22 @@ func (c *Connection) Send(topic string, data any) error {
 	// 将事件写入缓冲区并返回 nil。
 	c.writeBuf <- event.Event{Topic: topic, Data: data}
 	return nil
+}
+
+// onHeartbeat 处理心跳事件
+//
+// 参数：空
+//
+// 返回值：空
+func (c *Connection) onHeartbeat() {
+	for {
+		select {
+		case <-c.ctx.Done():
+			return
+		case <-c.heartbeat.C:
+			c.Send(event.TopicByHeartbeat, nil)
+		}
+	}
 }
 
 // Close 函数用于关闭连接。

@@ -136,7 +136,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	// 取消服务器的所有 goroutine
 	s.cancel()
 
-	fmt.Println("count", s.worker.Count())
+	// fmt.Println("count", s.worker.Count())
 
 	// 记录错误日志，表示服务器正在退出
 	s.logger.Error("Server exiting[1001]")

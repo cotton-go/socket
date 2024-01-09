@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	// file := "/home/zhoujun/code/jun3/golang/socket/config/local.yml"
-	file := "/home/ubuntu/code/golang/Worker/config/local.yml"
+	file := "/home/zhoujun/code/jun3/golang/socket/config/local.yml"
+	// file := "/home/ubuntu/code/golang/Worker/config/local.yml"
 	content, err := os.ReadFile(file)
 	if err != nil {
 		fmt.Println("Error reading file:", err)

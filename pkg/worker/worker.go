@@ -10,6 +10,7 @@ import (
 	"worker/pkg/codec"
 	"worker/pkg/connection"
 	"worker/pkg/event"
+	"worker/pkg/registry"
 )
 
 // Worker代表一个具有其属性和方法的工作对象。
@@ -25,6 +26,7 @@ type Worker struct {
 	cache       cache.ICache                     // 存储数据的缓存接口
 	codec       codec.ICodec                     // 编码和解码数据的编解码器接口
 	handle      connection.EventHandle           // 事件处理器，用于处理事件
+	registry    registry.Registry                // 注册中心处理器，用于注册服务
 }
 
 // NewWorker 方法用于创建一个新的 Worker 实例。
@@ -83,11 +85,27 @@ func (w *Worker) init(opts ...Options) {
 	// 调用 makeOption 方法设置选项
 	w.makeOption(opts...)
 
+	// 监听服务注册事件处理函数
+	go w.onRegister()
+
 	// 启动连接事件处理函数
 	go w.onConnection()
 
 	// 启动断开连接事件处理函数
 	go w.onDisconnect()
+}
+
+func (w *Worker) onRegister() {
+	// w.registry.Register()
+
+	// 循环处理断开连接事件
+	for {
+		select {
+		case <-w.ctx.Done():
+			w.registry.Deregister()
+			return
+		}
+	}
 }
 
 // onConnection 方法用于处理连接事件。
