@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"worker/pkg/log"
+	"github.com/cotton-go/socket/pkg/log"
 )
 
 // Server 结构体表示一个 gRPC 服务器

@@ -6,11 +6,11 @@ import (
 	"net"
 	"sync"
 
-	"worker/pkg/cache"
-	"worker/pkg/codec"
-	"worker/pkg/connection"
-	"worker/pkg/event"
-	"worker/pkg/registry"
+	"github.com/cotton-go/socket/pkg/cache"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
+	"github.com/cotton-go/socket/pkg/registry"
 )
 
 // Worker代表一个具有其属性和方法的工作对象。

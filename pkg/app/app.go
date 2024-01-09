@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"worker/pkg/server"
+	"github.com/cotton-go/socket/pkg/server"
 )
 
 // App 结构体表示一个应用程序，包含名称和服务器列表。

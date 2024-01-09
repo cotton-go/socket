@@ -12,8 +12,8 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"worker/pkg/codec"
-	"worker/pkg/event"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/event"
 )
 
 // EventHandle 是一个函数类型，用于处理事件

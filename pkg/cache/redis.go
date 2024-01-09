@@ -8,7 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/redis/go-redis/v9"
 
-	"worker/pkg/connection"
+	"github.com/cotton-go/socket/pkg/connection"
 )
 
 // Redis 结构体，包含一个上下文和一个 Redis 客户端

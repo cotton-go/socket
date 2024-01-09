@@ -6,9 +6,9 @@ import (
 	"encoding/gob"
 	"net"
 
-	"worker/pkg/codec"
-	"worker/pkg/event"
-	"worker/pkg/snowflake"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/event"
+	"github.com/cotton-go/socket/pkg/snowflake"
 )
 
 // 定义一个Options类型的函数，用于配置Connection结构体

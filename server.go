@@ -1,10 +1,10 @@
-package worker
+package socket
 
 import (
-	"worker/pkg/app"
-	"worker/pkg/config"
-	"worker/pkg/log"
-	"worker/pkg/worker"
+	"github.com/cotton-go/socket/pkg/app"
+	"github.com/cotton-go/socket/pkg/config"
+	"github.com/cotton-go/socket/pkg/log"
+	"github.com/cotton-go/socket/pkg/worker"
 )
 
 func NewServer(conf config.Config, opts ...worker.Options) *app.App {

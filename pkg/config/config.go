@@ -1,10 +1,10 @@
 package config
 
 import (
-	"worker/pkg/log"
-	"worker/pkg/server/grpc"
-	"worker/pkg/server/http"
-	"worker/pkg/server/tcp"
+	"github.com/cotton-go/socket/pkg/log"
+	"github.com/cotton-go/socket/pkg/server/grpc"
+	"github.com/cotton-go/socket/pkg/server/http"
+	"github.com/cotton-go/socket/pkg/server/tcp"
 )
 
 type Config struct {

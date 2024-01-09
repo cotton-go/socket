@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"worker/pkg/connection"
-	"worker/pkg/event"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
 )
 
 // Client 结构体表示一个客户端，包含一个连接对象

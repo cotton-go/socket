@@ -7,11 +7,11 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"worker/pkg/client"
-	"worker/pkg/codec"
-	"worker/pkg/config"
-	"worker/pkg/connection"
-	"worker/pkg/event"
+	"github.com/cotton-go/socket/pkg/client"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/config"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
 )
 
 func main() {

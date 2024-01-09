@@ -10,11 +10,11 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"worker/pkg/cache"
-	"worker/pkg/client"
-	"worker/pkg/codec"
-	"worker/pkg/connection"
-	"worker/pkg/event"
+	"github.com/cotton-go/socket/pkg/cache"
+	"github.com/cotton-go/socket/pkg/client"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
 )
 
 func TestWork(t *testing.T) {

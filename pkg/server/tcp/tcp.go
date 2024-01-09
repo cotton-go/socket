@@ -8,8 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"worker/pkg/log"
-	"worker/pkg/worker"
+	"github.com/cotton-go/socket/pkg/log"
+	"github.com/cotton-go/socket/pkg/worker"
 )
 
 // Server 结构体表示一个服务器实例

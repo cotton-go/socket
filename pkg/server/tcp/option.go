@@ -3,7 +3,7 @@ package tcp
 import (
 	"context"
 
-	"worker/pkg/worker"
+	"github.com/cotton-go/socket/pkg/worker"
 )
 
 // Option 服务器配置选项类型

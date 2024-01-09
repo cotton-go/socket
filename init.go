@@ -1,4 +1,4 @@
-package worker
+package socket
 
 import (
 	"net/http"
@@ -6,14 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"worker/pkg/cache"
-	"worker/pkg/codec"
-	"worker/pkg/log"
-	"worker/pkg/server"
-	"worker/pkg/server/grpc"
-	httpx "worker/pkg/server/http"
-	"worker/pkg/server/tcp"
-	"worker/pkg/worker"
+	"github.com/cotton-go/socket/pkg/cache"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/log"
+	"github.com/cotton-go/socket/pkg/server"
+	"github.com/cotton-go/socket/pkg/server/grpc"
+	httpx "github.com/cotton-go/socket/pkg/server/http"
+	"github.com/cotton-go/socket/pkg/server/tcp"
+	"github.com/cotton-go/socket/pkg/worker"
 )
 
 var (

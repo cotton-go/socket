@@ -1,6 +1,6 @@
 package cache
 
-import "worker/pkg/connection"
+import "github.com/cotton-go/socket/pkg/connection"
 
 // ICache 是一个接口，定义了在线、离线和查找操作的方法
 type ICache interface {

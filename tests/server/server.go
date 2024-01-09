@@ -7,11 +7,11 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"worker"
-	"worker/pkg/config"
-	"worker/pkg/connection"
-	"worker/pkg/event"
-	work "worker/pkg/worker"
+	"github.com/cotton-go/socket"
+	"github.com/cotton-go/socket/pkg/config"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
+	"github.com/cotton-go/socket/pkg/worker"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 		return
 	}
 
-	server := worker.NewServer(conf, work.WithHandle(handler))
+	server := socket.NewServer(conf, worker.WithHandle(handler))
 	server.Run(context.Background())
 }
 

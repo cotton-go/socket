@@ -3,11 +3,11 @@ package worker
 import (
 	"context"
 
-	"worker/pkg/cache"
-	"worker/pkg/codec"
-	"worker/pkg/connection"
-	"worker/pkg/event"
-	"worker/pkg/snowflake"
+	"github.com/cotton-go/socket/pkg/cache"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
+	"github.com/cotton-go/socket/pkg/snowflake"
 )
 
 // Options 是一个函数类型，用于接收一个 *Worker 实例作为参数，并对其进行配置。

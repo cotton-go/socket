@@ -3,7 +3,7 @@ package cache
 import (
 	"sync"
 
-	"worker/pkg/connection"
+	"github.com/cotton-go/socket/pkg/connection"
 )
 
 // Memory 是一个结构体，包含一个读写锁和一个存储连接的 map

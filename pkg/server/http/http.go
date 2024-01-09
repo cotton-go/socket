@@ -9,7 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"worker/pkg/log"
+	"github.com/cotton-go/socket/pkg/log"
 )
 
 // Server 结构体表示一个 HTTP 服务器

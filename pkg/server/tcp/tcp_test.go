@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"worker/pkg/client"
-	"worker/pkg/codec"
-	"worker/pkg/connection"
-	"worker/pkg/event"
-	"worker/pkg/log"
-	"worker/pkg/worker"
+	"github.com/cotton-go/socket/pkg/client"
+	"github.com/cotton-go/socket/pkg/codec"
+	"github.com/cotton-go/socket/pkg/connection"
+	"github.com/cotton-go/socket/pkg/event"
+	"github.com/cotton-go/socket/pkg/log"
+	"github.com/cotton-go/socket/pkg/worker"
 )
 
 func TestNewTCP(t *testing.T) {

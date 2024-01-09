@@ -1,6 +1,6 @@
 package app
 
-import "worker/pkg/server"
+import "github.com/cotton-go/socket/pkg/server"
 
 // WithServer 根据传入的服务器列表设置 App 实例的服务器属性。
 func WithServer(servers ...server.Server) Option {
