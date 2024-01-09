@@ -224,8 +224,9 @@ func (c *Connection) read() {
 			e.Data, err = c.codec.Decode(e.Data)
 			if err != nil {
 				fmt.Println("err", err)
-				return
+				continue
 			}
+
 			// 触发相应的事件处理函数
 			c.Emit(e.Topic, e)
 		}
