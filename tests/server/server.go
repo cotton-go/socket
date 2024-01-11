@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -37,6 +38,7 @@ func handler(c *connection.Connection, e event.Event) {
 	fmt.Println("connection", c.ID, "workID", c.WorkID, "topic", e.Topic, "data", e.Data)
 	if e.Topic == event.TopicByLogin {
 		c.Send("msg1", 1)
-		c.Send("msg", map[string]string{"msg": "data"})
+		c.Send("msg", map[string]string{"time": time.Now().String()})
+		c.Send("msg", c)
 	}
 }

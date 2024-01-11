@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -36,6 +37,7 @@ type Connection struct {
 	handle    EventHandle              // 事件处理函数
 	isClient  bool                     // 是否为客户端连接
 	heartbeat *time.Ticker             // 心跳间隔
+	mutex     sync.Mutex
 }
 
 // NewConnection 创建一个新的连接对象，并返回该对象的指针
@@ -53,16 +55,16 @@ func NewConnection(opts ...Options) *Connection {
 		heartbeat: time.NewTicker(time.Second * 50),
 	}
 
-	// 调用 makeOption 方法设置连接选项
-	conn.makeOption(opts...)
+	// 调用 applyOptions 方法设置连接选项
+	conn.applyOptions(opts...)
 	// 启动连接初始化协程
-	go conn.init(opts...)
+	go conn.init()
 	// 返回连接对象指针
 	return conn
 }
 
 // makeOption 根据传入的选项参数设置连接对象的属性
-func (w *Connection) makeOption(opts ...Options) {
+func (w *Connection) applyOptions(opts ...Options) {
 	// 定义默认选项
 	var option = []Options{
 		WithID(0),
@@ -83,8 +85,7 @@ func (w *Connection) makeOption(opts ...Options) {
 //
 // 参数：
 //   - c *Connection 连接对象指针
-//   - opts ...Options 可变参数，表示可选的配置项
-func (c *Connection) init(opts ...Options) {
+func (c *Connection) init() {
 	// 打印连接 ID
 	// fmt.Println("Connection init id=", c.ID)
 
@@ -131,6 +132,9 @@ func (c *Connection) init(opts ...Options) {
 // 返回值：
 //   - error 返回错误信息，如果成功则返回 nil
 func (c *Connection) On(event string, fn EventHandle) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	// 如果连接已关闭，则返回错误
 	if c.closed {
 		return errors.New("is closed")
@@ -186,10 +190,9 @@ func (c *Connection) Emit(topic string, data event.Event) {
 
 // read 函数用于从连接中读取事件数据，直到连接关闭或发生错误。
 //
-// 返回值：
-//   - error 返回错误信息
+// 参数：无
 //
-// read方法用于从连接中读取事件数据
+// 返回值：无
 func (c *Connection) read() {
 	// 在函数退出前调用 recover 方法，防止 panic 导致的程序崩溃
 	defer c.recover("read over")
@@ -276,6 +279,9 @@ func (c *Connection) write() {
 // 返回值：
 //   - error 返回错误信息，如果连接已关闭则返回 "is closed" 错误
 func (c *Connection) Send(topic string, data any) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	if c.closed {
 		return errors.New("is closed")
 	}
@@ -308,27 +314,17 @@ func (c *Connection) onHeartbeat() {
 // 返回值：
 //   - error 返回错误信息，如果关闭成功则返回 nil。
 func (c *Connection) Close() error {
-	// 如果连接已经关闭，则直接返回 nil。
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	if c.closed {
-		return nil
+		return errors.New("is close")
 	}
 
-	// 发送关闭事件。
 	c.handle(c, event.Event{Topic: event.TopicByClose, Data: nil})
-
-	// 锁定连接对象，保证线程安全。
-	// c.locker.Lock()
-
-	// 将连接状态设置为已关闭。
 	c.closed = true
-
-	// 取消所有未完成的请求。
 	c.cancel()
-
-	// 关闭底层的网络连接。
 	c.conn.Close()
-
-	// 返回错误信息。
 	return nil
 }
 
