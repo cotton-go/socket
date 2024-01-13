@@ -3,7 +3,7 @@ package connection
 import (
 	"bufio"
 	"context"
-	"encoding/gob"
+	"encoding/json"
 	"net"
 
 	"github.com/cotton-go/socket/pkg/codec"
@@ -67,9 +67,9 @@ func WithConn(conn net.Conn) Options {
 		// 为c的encBuf属性分配一个新的bufio.Writer实例，并将conn作为参数传入
 		c.encBuf = bufio.NewWriter(conn)
 		// 为c的enc属性分配一个新的gob.Encoder实例，并将c的encBuf属性作为参数传入
-		c.enc = gob.NewEncoder(c.encBuf)
+		c.enc = json.NewEncoder(c.encBuf)
 		// 为c的dec属性分配一个新的gob.Decoder实例，并将conn作为参数传入
-		c.dec = gob.NewDecoder(conn)
+		c.dec = json.NewDecoder(conn)
 	}
 }
 
